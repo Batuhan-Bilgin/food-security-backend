@@ -1,8 +1,12 @@
 {
   "name": "food-security-backend",
   "version": "1.0.0",
-  "description": "Food Security Backend API",
+  "description": "Backend for food security application",
   "main": "app.js",
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
