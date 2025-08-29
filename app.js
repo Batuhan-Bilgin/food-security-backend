@@ -122,6 +122,20 @@ app.get('/', (req, res) => {
   res.json({ message: 'Backend is running', timestamp: new Date().toISOString() });
 });
 
+// Health check endpoint without database connection
+app.get('/health', (req, res) => {
+  const origin = req.get('Origin');
+  if (allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  res.json({ 
+    status: 'healthy', 
+    message: 'Backend is running without database connection',
+    timestamp: new Date().toISOString() 
+  });
+});
+
 // Test route for CORS verification
 app.get('/test-cors', (req, res) => {
   console.log('=== CORS Test Route ===');
@@ -147,7 +161,15 @@ const config = {
     port: 1433,
     options: {
         encrypt: true,  // Required for AWS RDS
-        trustServerCertificate: true  // Recommended for production environments
+        trustServerCertificate: true,  // Recommended for production environments
+        connectTimeout: 30000, // 30 seconds connection timeout
+        requestTimeout: 30000, // 30 seconds request timeout
+        cancelTimeout: 5000,   // 5 seconds cancel timeout
+        pool: {
+            max: 10,           // Maximum number of connections in pool
+            min: 0,            // Minimum number of connections in pool
+            idleTimeoutMillis: 30000 // Close idle connections after 30 seconds
+        }
     }
 };
 
@@ -183,7 +205,10 @@ app.post('/login', async (req, res) => {
     console.log(`Received login request for username: ${username} and password: ${password}`);
 
     try {
+        // Test database connection first
         const pool = await sql.connect(config);
+        console.log('✅ Database connection successful');
+        
         const result = await pool.request()
             .input('username', sql.VarChar, username)
             .query('SELECT * FROM Users WHERE username = @username');
@@ -213,12 +238,32 @@ app.post('/login', async (req, res) => {
         }
     } catch (error) {
         console.error('Error during login:', error);
+        
+        // Provide specific error messages based on error type
+        let errorMessage = 'Login failed';
+        if (error.code === 'ELOGIN') {
+            errorMessage = 'Database authentication failed';
+        } else if (error.code === 'ETIMEOUT') {
+            errorMessage = 'Database connection timeout';
+        } else if (error.code === 'ENOTFOUND') {
+            errorMessage = 'Database server not found';
+        }
+        
         // Ensure CORS headers are present even on error
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Credentials', 'true');
+        const origin = req.get('Origin');
+        if (allowedOrigins.includes(origin)) {
+            res.header('Access-Control-Allow-Origin', origin);
+            res.header('Access-Control-Allow-Credentials', 'true');
+        } else {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Credentials', 'true');
+        }
         res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
         res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,Cache-Control');
-        res.status(500).json({ message: 'Login failed' });
+        res.status(500).json({ 
+            message: errorMessage,
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        });
     }
 });
 
@@ -870,13 +915,30 @@ app.get('/dashboard-responses', async (req, res) => {
 // after all routes, before listen():
 
 app.use((err, req, res, next) => {
-  // const origin = req.get('Origin'); // This line is removed as CORS is disabled
-  // if (allowedOrigins.includes(origin)) { // This line is removed as CORS is disabled
-  //   res.header('Access-Control-Allow-Origin', origin); // This line is removed as CORS is disabled
-  //   res.header('Access-Control-Allow-Credentials', 'true'); // This line is removed as CORS is disabled
-  // } // This line is removed as CORS is disabled
   console.error('💥 Unexpected error in', req.method, req.path, err);
-  res.status(err.status || 500).json({ error: err.message });
+  
+  // Set CORS headers for error responses
+  const origin = req.get('Origin');
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,Cache-Control');
+  
+  // Send appropriate error response
+  const statusCode = err.status || 500;
+  const errorMessage = process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error';
+  
+  res.status(statusCode).json({ 
+    error: errorMessage,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
 });
 
 
