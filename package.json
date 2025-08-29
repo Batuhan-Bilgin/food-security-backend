@@ -6,7 +6,13 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test-cors": "node test-cors.js"
+    "test-cors": "node test-cors.js",
+    "test-cors-local": "node test-cors-local.js",
+    "test-frontend-backend": "node test-frontend-backend.js",
+    "test-production-cors": "node test-production-cors.js",
+    "test-production-live": "node test-production-live.js",
+    "azure-start": "node startup.js",
+    "azure-dev": "nodemon startup.js"
   },
   "dependencies": {
     "axios": "^1.11.0",

@@ -1,23 +1,113 @@
-// Azure App Service startup file
-const { spawn } = require('child_process');
+// Azure App Service startup script
+const express = require('express');
 const path = require('path');
 
-console.log('Starting Azure App Service...');
-console.log('Current directory:', process.cwd());
-console.log('Node version:', process.version);
+// Create Express app
+const app = express();
 
-// Start the main application
-const app = spawn('node', ['app.js'], {
-  stdio: 'inherit',
-  cwd: __dirname
+// Basic middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// CORS middleware for Azure
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'https://food-security.net',
+    'https://food-security-front.azurewebsites.net',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ];
+  
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    res.header('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  next();
 });
 
-app.on('error', (err) => {
-  console.error('Failed to start app:', err);
-  process.exit(1);
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'production'
+  });
 });
 
-app.on('exit', (code) => {
-  console.log(`App exited with code ${code}`);
-  process.exit(code);
+// Minimal test endpoint
+app.get('/minimal-test', (req, res) => {
+  res.json({ 
+    message: 'Minimal test endpoint working',
+    timestamp: new Date().toISOString(),
+    status: 'success'
+  });
 });
+
+// Test endpoint
+app.get('/test', (req, res) => {
+  res.json({ 
+    message: 'Basic test endpoint working',
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Login endpoint (simplified for testing)
+app.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    // Simple response for testing
+    res.json({ 
+      message: 'Login endpoint working',
+      username: username,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      message: 'Login failed', 
+      error: error.message 
+    });
+  }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Global error:', err);
+  res.status(500).json({ 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    message: 'Endpoint not found',
+    path: req.originalUrl
+  });
+});
+
+// Start server
+const port = process.env.PORT || 5002;
+app.listen(port, () => {
+  console.log(`Azure startup server running on port ${port}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'production'}`);
+  console.log(`Health check: http://localhost:${port}/health`);
+});
+
+module.exports = app;
