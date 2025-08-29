@@ -39,6 +39,15 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Minimal test endpoint - no dependencies
+app.get('/minimal-test', (req, res) => {
+  res.json({ 
+    message: 'Minimal test endpoint working',
+    timestamp: new Date().toISOString(),
+    status: 'success'
+  });
+});
+
 // Simple health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
