@@ -125,25 +125,6 @@ app.options('/login', (req, res) => {
 
 // Login route: authenticate users based on MSSQL Users table
 app.post('/login', async (req, res) => {
-    // Set CORS headers immediately for this endpoint
-    const allowedOrigins = [
-        'https://food-security.net',
-        'https://food-security-front.azurewebsites.net',
-        'http://localhost:3000',
-        'http://localhost:3001'
-    ];
-    
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-    } else {
-        res.header('Access-Control-Allow-Origin', '*');
-    }
-    
-    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-
     const { username, password } = req.body;
 
     console.log(`Received login request for username: ${username}`);
@@ -166,7 +147,7 @@ app.post('/login', async (req, res) => {
     } catch (error) {
         console.error('Error during login:', error);
         
-        // CORS headers already set above, just send error response
+        // CORS headers already set in main middleware, just send error response
         res.status(500).json({ message: 'Login failed', error: error.message });
     }
 });
