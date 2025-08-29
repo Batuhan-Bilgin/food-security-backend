@@ -1,114 +1,51 @@
 const express = require('express');
-// const cors    = require('cors');
 const sql     = require('mssql');
 
 const app = express();
 
-// Debug: Log all incoming requests
+// Production-ready CORS configuration for Azure App Service
 app.use((req, res, next) => {
-  console.log('=== Incoming Request ===');
-  console.log(`${req.method} ${req.url}`);
-  console.log('Origin:', req.get('Origin'));
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
-  next();
-});
-
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5001',
-  'https://food-security-front.azurewebsites.net',
-  'https://food-security-back.azurewebsites.net',
-  'https://food-security.net',
-  'https://www.food-security.net'
-];
-
-// CORS configuration for local development and production
-app.use((req, res, next) => {
-  const origin = req.get('Origin');
+  // Always set CORS headers first
+  const allowedOrigins = [
+    'https://food-security.net',
+    'https://food-security-front.azurewebsites.net',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ];
   
-  console.log(`=== CORS Request ===`);
-  console.log(`Method: ${req.method}`);
-  console.log(`Origin: ${origin}`);
-  console.log(`URL: ${req.url}`);
-  
-  // Allow local development
-  if (origin === 'http://localhost:3000') {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Local development origin allowed');
-  }
-  // Allow Azure frontend
-  else if (origin === 'https://food-security-front.azurewebsites.net') {
-    res.header('Access-Control-Allow-Origin', 'https://food-security-front.azurewebsites.net');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Azure frontend origin allowed');
-  }
-  // Allow other production origins
-  else if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Production origin allowed');
-  }
-  // Allow requests with no origin (like mobile apps or curl requests)
-  else if (!origin) {
-    res.header('Access-Control-Allow-Origin', '*');
-    console.log('✅ No origin request allowed');
-  }
-  else {
-    console.log('❌ Origin not allowed:', origin);
-    console.log('Available origins:', allowedOrigins);
-  }
+  const origin = req.headers.origin;
   
   // Set CORS headers for all requests
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    // Fallback for development or unknown origins
+    res.header('Access-Control-Allow-Origin', '*');
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-Requested-With');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
   
-  // Handle preflight requests
+  // Handle preflight requests immediately
   if (req.method === 'OPTIONS') {
-    console.log('🔄 Preflight request handled');
-    res.status(204).send();
+    res.status(200).end();
     return;
   }
   
   next();
 });
 
-
 app.use(express.json());
 
-// Dedicated preflight handler for complex routes
-app.options('*', (req, res) => {
-  console.log('=== Dedicated Preflight Handler ===');
-  console.log('Requested Method:', req.get('Access-Control-Request-Method'));
-  console.log('Requested Headers:', req.get('Access-Control-Request-Headers'));
-  console.log('Origin:', req.get('Origin'));
-  
-  const origin = req.get('Origin');
-  
-  // Set appropriate CORS headers for preflight
-  if (origin === 'http://localhost:3000') {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Local development preflight allowed');
-  } else if (origin === 'https://food-security-front.azurewebsites.net') {
-    res.header('Access-Control-Allow-Origin', 'https://food-security-front.azurewebsites.net');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Azure frontend preflight allowed');
-  } else if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Production preflight allowed');
-  } else {
-    console.log('❌ Preflight origin not allowed:', origin);
-  }
-  
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-Requested-With');
-  res.header('Access-Control-Max-Age', '86400');
-  
-  console.log('✅ Preflight response sent');
-  res.status(204).send();
+// Simple health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    message: 'Backend is running',
+    timestamp: new Date().toISOString() 
+  });
 });
 
 // Add a simple root route for testing
@@ -118,12 +55,31 @@ app.get('/', (req, res) => {
 
 // Test route for CORS verification
 app.get('/test-cors', (req, res) => {
-  console.log('=== CORS Test Route ===');
-  console.log('Origin:', req.get('Origin'));
   res.json({ 
     message: 'CORS test successful', 
-    timestamp: new Date().toISOString(),
-    origin: req.get('Origin')
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Enhanced CORS test endpoint with detailed headers
+app.get('/cors-debug', (req, res) => {
+  const headers = {
+    'Access-Control-Allow-Origin': req.headers.origin || '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    'Access-Control-Allow-Credentials': 'true'
+  };
+  
+  // Set all CORS headers
+  Object.entries(headers).forEach(([key, value]) => {
+    res.header(key, value);
+  });
+  
+  res.json({ 
+    message: 'CORS debug endpoint',
+    headers: headers,
+    requestOrigin: req.headers.origin,
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -135,40 +91,62 @@ const config = {
     port: 1433,
     options: {
         encrypt: true,  // Required for AWS RDS
-        trustServerCertificate: true  // Recommended for production environments
+        trustServerCertificate: true,  // Recommended for production environments
+        connectTimeout: 30000, // 30 seconds connection timeout
+        requestTimeout: 30000, // 30 seconds request timeout
+        cancelTimeout: 5000    // 5 seconds cancel timeout
     }
 };
 
-// Preflight handler for login route
+// Handle OPTIONS preflight for login endpoint
 app.options('/login', (req, res) => {
-  console.log('=== Login Preflight ===');
-  const origin = req.get('Origin');
-  if (origin === 'http://localhost:3000') {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    const allowedOrigins = [
+        'https://food-security.net',
+        'https://food-security-front.azurewebsites.net',
+        'http://localhost:3000',
+        'http://localhost:3001'
+    ];
+    
+    const origin = req.headers.origin;
+    
+    if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+    } else {
+        res.header('Access-Control-Allow-Origin', '*');
+    }
+    
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Local login preflight allowed');
-  } else if (origin === 'https://food-security-front.azurewebsites.net') {
-    res.header('Access-Control-Allow-Origin', 'https://food-security-front.azurewebsites.net');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Azure login preflight allowed');
-  } else if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Production login preflight allowed');
-  } else {
-    console.log('❌ Login preflight origin not allowed:', origin);
-  }
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Max-Age', '86400');
-  res.status(204).send();
+    res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+    
+    res.status(200).end();
 });
 
 // Login route: authenticate users based on MSSQL Users table
 app.post('/login', async (req, res) => {
+    // Set CORS headers immediately for this endpoint
+    const allowedOrigins = [
+        'https://food-security.net',
+        'https://food-security-front.azurewebsites.net',
+        'http://localhost:3000',
+        'http://localhost:3001'
+    ];
+    
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+    } else {
+        res.header('Access-Control-Allow-Origin', '*');
+    }
+    
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
     const { username, password } = req.body;
 
-    console.log(`Received login request for username: ${username} and password: ${password}`);
+    console.log(`Received login request for username: ${username}`);
 
     try {
         const pool = await sql.connect(config);
@@ -178,10 +156,8 @@ app.post('/login', async (req, res) => {
 
         const user = result.recordset[0];
 
-        console.log(`User found in database: ${user}`);
-
         if (user && user.password === password) {  // In production, compare hashed passwords
-            console.log('Login successful, sending country and role to client');
+            console.log('Login successful');
             res.status(200).json({ message: 'Login successful', country: user.country, role: user.role });
         } else {
             console.log('Login failed: Invalid credentials');
@@ -189,38 +165,10 @@ app.post('/login', async (req, res) => {
         }
     } catch (error) {
         console.error('Error during login:', error);
-        // Ensure CORS headers are present even on error
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,Cache-Control');
-        res.status(500).json({ message: 'Login failed' });
+        
+        // CORS headers already set above, just send error response
+        res.status(500).json({ message: 'Login failed', error: error.message });
     }
-});
-
-// Preflight handler for submit route
-app.options('/submit', (req, res) => {
-  console.log('=== Submit Preflight ===');
-  const origin = req.get('Origin');
-  if (origin === 'http://localhost:3000') {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Local submit preflight allowed');
-  } else if (origin === 'https://food-security-front.azurewebsites.net') {
-    res.header('Access-Control-Allow-Origin', 'https://food-security-front.azurewebsites.net');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Azure submit preflight allowed');
-  } else if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Production submit preflight allowed');
-  } else {
-    console.log('❌ Submit preflight origin not allowed:', origin);
-  }
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Max-Age', '86400');
-  res.status(204).send();
 });
 
 // POST route to store or update the questionnaire responses
@@ -320,31 +268,6 @@ app.post('/submit', async (req, res) => {
         console.error('Error saving submission:', error);
         res.status(500).send('Error saving submission');
     }
-});
-
-// Preflight handler for submit-master route
-app.options('/submit-master', (req, res) => {
-  console.log('=== Submit Master Preflight ===');
-  const origin = req.get('Origin');
-  if (origin === 'http://localhost:3000') {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Local submit-master preflight allowed');
-  } else if (origin === 'https://food-security-front.azurewebsites.net') {
-    res.header('Access-Control-Allow-Origin', 'https://food-security-front.azurewebsites.net');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Azure submit-master preflight allowed');
-  } else if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Production submit-master preflight allowed');
-  } else {
-    console.log('❌ Submit-master preflight origin not allowed:', origin);
-  }
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Max-Age', '86400');
-  res.status(204).send();
 });
 
 app.post('/submit-master', async (req, res) => {
@@ -785,18 +708,24 @@ app.get('/dashboard-responses', async (req, res) => {
 
 // after all routes, before listen():
 
+// Global error handling middleware
 app.use((err, req, res, next) => {
-  // const origin = req.get('Origin'); // This line is removed as CORS is disabled
-  // if (allowedOrigins.includes(origin)) { // This line is removed as CORS is disabled
-  //   res.header('Access-Control-Allow-Origin', origin); // This line is removed as CORS is disabled
-  //   res.header('Access-Control-Allow-Credentials', 'true'); // This line is removed as CORS is disabled
-  // } // This line is removed as CORS is disabled
   console.error('💥 Unexpected error in', req.method, req.path, err);
-  res.status(err.status || 500).json({ error: err.message });
+  
+  // Send appropriate error response
+  const statusCode = err.status || 500;
+  const errorMessage = process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error';
+  
+  res.status(statusCode).json({ 
+    error: errorMessage,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
 });
 
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 5002;
 
 app.listen(port, () => {
     console.log(`Backend is working on port ${port}`);

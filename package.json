@@ -1,20 +1,26 @@
 {
-  "name": "backend",
+  "name": "food-security-backend",
   "version": "1.0.0",
-  "type": "commonjs",
+  "description": "Food Security Backend API",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "node app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test-cors": "node test-cors.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "mssql": "^11.0.1"
-  }
+    "axios": "^1.11.0",
+    "express": "^4.18.2",
+    "mssql": "^9.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "food-security",
+    "api",
+    "backend"
+  ],
+  "author": "Emir Tarik",
+  "license": "MIT"
 }
