@@ -48,6 +48,32 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Database test endpoint
+app.get('/db-test', async (req, res) => {
+  try {
+    const pool = await sql.connect(config);
+    res.json({ 
+      message: 'Database connection successful',
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ 
+      message: 'Database connection failed',
+      error: error.message,
+      timestamp: new Date().toISOString() 
+    });
+  }
+});
+
+// Simple test endpoint without any dependencies
+app.get('/test', (req, res) => {
+  res.json({ 
+    message: 'Basic test endpoint working',
+    timestamp: new Date().toISOString() 
+  });
+});
+
 // Add a simple root route for testing
 app.get('/', (req, res) => {
   res.json({ message: 'Backend is running', timestamp: new Date().toISOString() });
