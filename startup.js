@@ -44,6 +44,26 @@ app.use((req, res, next) => {
   next();
 });
 
+// Simple HTML test endpoint
+app.get('/html-test', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Azure Test</title>
+    </head>
+    <body>
+      <h1>Azure App Service Test</h1>
+      <p>Status: Working!</p>
+      <p>Node.js Version: ${process.version}</p>
+      <p>Timestamp: ${new Date().toISOString()}</p>
+      <p>Environment: ${process.env.NODE_ENV || 'production'}</p>
+    </body>
+    </html>
+  `);
+});
+
 // Health check endpoint with version info
 app.get('/health', (req, res) => {
   res.json({ 
