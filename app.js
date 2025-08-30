@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const sql     = require('mssql');
 
@@ -119,17 +120,17 @@ app.get('/cors-debug', (req, res) => {
 });
 
 const config = {
-    user: 'admin',  // Replace with your RDS master username
-    password: 'XEqbUunu1P0vTyJH873y',  // Replace with your RDS master user password
-    server: 'food-security-backend.cf6smoo0edix.eu-north-1.rds.amazonaws.com',  // Your AWS RDS endpoint
-    database: 'backend',  // The name of your database in RDS
-    port: 1433,
+    user: process.env.DB_USER || 'admin',
+    password: process.env.DB_PASSWORD || 'XEqbUunu1P0vTyJH873y',
+    server: process.env.DB_SERVER || 'food-security-backend.cf6smoo0edix.eu-north-1.rds.amazonaws.com',
+    database: process.env.DB_NAME || 'backend',
+    port: parseInt(process.env.DB_PORT) || 1433,
     options: {
-        encrypt: true,  // Required for AWS RDS
-        trustServerCertificate: true,  // Recommended for production environments
-        connectTimeout: 30000, // 30 seconds connection timeout
-        requestTimeout: 30000, // 30 seconds request timeout
-        cancelTimeout: 5000    // 5 seconds cancel timeout
+        encrypt: process.env.DB_ENCRYPT !== 'false',  // Default to true for Azure
+        trustServerCertificate: process.env.DB_TRUST_CERT === 'true',  // Default to false for Azure
+        connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT) || 30000,
+        requestTimeout: parseInt(process.env.DB_REQUEST_TIMEOUT) || 30000,
+        cancelTimeout: parseInt(process.env.DB_CANCEL_TIMEOUT) || 5000
     }
 };
 
