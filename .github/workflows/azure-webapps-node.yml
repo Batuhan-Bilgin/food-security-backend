@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: food-security-back-new    # New app service name
+  AZURE_WEBAPP_NAME: food-security-back    # Existing app service name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # Path to web app project
   NODE_VERSION: '18.x'                # Node.js version
 
