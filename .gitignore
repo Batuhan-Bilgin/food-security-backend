@@ -8,3 +8,6 @@ yarn-error.log*
 
 # Environment Variables
 .env
+
+# Frontend (separate repository)
+frontend/

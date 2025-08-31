@@ -15,6 +15,7 @@
     "test-frontend-backend": "node test-frontend-backend.js",
     "test-production-cors": "node test-production-cors.js",
     "test-production-live": "node test-production-live.js",
+    "test-production-deployment": "node test-production-deployment.js",
     "azure-start": "node startup.js",
     "azure-dev": "nodemon startup.js"
   },

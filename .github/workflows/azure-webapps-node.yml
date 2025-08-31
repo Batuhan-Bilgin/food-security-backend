@@ -2,11 +2,11 @@ name: Deploy to Azure Web App
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "3-cors-blockage" ]
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: food-security-backend    # Simple app service name
+  AZURE_WEBAPP_NAME: food-security-back    # Use existing app service
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # Path to web app project
   NODE_VERSION: '18.x'                # Node.js version
 

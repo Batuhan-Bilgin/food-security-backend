@@ -76,6 +76,15 @@ app.get('/db-test', async (req, res) => {
   }
 });
 
+// Mock database endpoint for testing without real database
+app.get('/mock-db-test', (req, res) => {
+  res.json({ 
+    message: 'Mock database test successful',
+    status: 'mock',
+    timestamp: new Date().toISOString() 
+  });
+});
+
 // Simple test endpoint without any dependencies
 app.get('/test', (req, res) => {
   res.json({ 
@@ -122,12 +131,12 @@ app.get('/cors-debug', (req, res) => {
 const config = {
     user: process.env.DB_USER || 'admin',
     password: process.env.DB_PASSWORD || 'XEqbUunu1P0vTyJH873y',
-    server: process.env.DB_SERVER || 'food-security-backend.cf6smoo0edix.eu-north-1.rds.amazonaws.com',
+    server: process.env.DB_SERVER || 'food-security-backend.cf6smoo0edix.eu-north-1.rds.amazonaws.com',  // AWS RDS fallback
     database: process.env.DB_NAME || 'backend',
     port: parseInt(process.env.DB_PORT) || 1433,
     options: {
-        encrypt: process.env.DB_ENCRYPT !== 'false',  // Default to true for Azure
-        trustServerCertificate: process.env.DB_TRUST_CERT === 'true',  // Default to false for Azure
+        encrypt: process.env.DB_ENCRYPT !== 'false',  // Default to true for Azure, false for local
+        trustServerCertificate: process.env.DB_TRUST_CERT === 'true',  // Default to false for Azure, true for local
         connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT) || 30000,
         requestTimeout: parseInt(process.env.DB_REQUEST_TIMEOUT) || 30000,
         cancelTimeout: parseInt(process.env.DB_CANCEL_TIMEOUT) || 5000
@@ -185,6 +194,27 @@ app.post('/login', async (req, res) => {
         
         // CORS headers already set in main middleware, just send error response
         res.status(500).json({ message: 'Login failed', error: error.message });
+    }
+});
+
+// Mock login endpoint for testing without real database
+app.post('/mock-login', (req, res) => {
+    const { username, password } = req.body;
+    
+    console.log(`Mock login request for username: ${username}`);
+    
+    // Mock user credentials for testing
+    if (username === '_bf_master_' && password === 'password') {
+        console.log('Mock login successful');
+        res.status(200).json({ 
+            message: 'Mock login successful', 
+            country: 'Test Country', 
+            role: 'Test Role',
+            status: 'mock'
+        });
+    } else {
+        console.log('Mock login failed: Invalid credentials');
+        res.status(401).json({ message: 'Invalid credentials' });
     }
 });
 
@@ -742,7 +772,7 @@ app.use((err, req, res, next) => {
 });
 
 
-const port = process.env.PORT || 5002;
+const port = process.env.PORT || 5003;
 
 app.listen(port, () => {
     console.log(`Backend is working on port ${port}`);

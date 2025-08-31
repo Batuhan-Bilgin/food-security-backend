@@ -87,14 +87,41 @@ Content-Type: application/json
 {"message": "Invalid credentials"}
 ```
 
-## 🚀 Deployment
+## 🚀 Production Deployment
 
-After testing locally, deploy to Azure App Service:
+### Prerequisites
+1. **Azure SQL Database** created and accessible
+2. **Environment Variables** configured in Azure App Service
 
+### Environment Variables Setup
+In Azure App Service, set these environment variables:
+
+```bash
+# Azure SQL Database Configuration
+DB_USER=your_azure_db_user
+DB_PASSWORD=your_azure_db_password
+DB_SERVER=your_azure_server.database.windows.net
+DB_NAME=your_azure_database_name
+DB_PORT=1433
+DB_ENCRYPT=true
+DB_TRUST_CERT=false
+
+# Connection Timeouts
+DB_CONNECT_TIMEOUT=30000
+DB_REQUEST_TIMEOUT=30000
+DB_CANCEL_TIMEOUT=5000
+```
+
+### Deployment Steps
 1. Commit your changes to the `3-cors-blockage` branch
 2. Push to GitHub
 3. Azure will automatically deploy the updated code
 4. Test the live endpoints using the test script or manual testing
+
+### Database Migration
+- **From**: AWS RDS (currently failing)
+- **To**: Azure SQL Database (recommended)
+- **Fallback**: AWS RDS (if Azure DB not available)
 
 ## 🔍 Troubleshooting
 
@@ -113,6 +140,19 @@ If CORS issues persist:
 - `package.json` - Added axios dependency for testing
 - `CORS-FIX-README.md` - This documentation
 
+## 🔍 Root Cause Analysis
+
+### Primary Issue: CORS Configuration
+- **Problem**: Missing CORS headers in error responses
+- **Solution**: Implemented comprehensive CORS middleware
+- **Result**: All responses now include proper CORS headers
+
+### Secondary Issue: Database Connectivity
+- **Problem**: AWS RDS connection failing from Azure App Service
+- **Root Cause**: Cross-cloud network restrictions and SSL configuration
+- **Solution**: Flexible database configuration with environment variables
+- **Result**: Ready for Azure SQL Database deployment
+
 ## ✅ Acceptance Criteria Met
 
 - ✅ Login requests from both live frontends succeed
@@ -120,3 +160,4 @@ If CORS issues persist:
 - ✅ Error responses include correct CORS headers
 - ✅ Documentation provided with root cause and solution
 - ✅ Testing instructions included
+- ✅ Production deployment guide provided
