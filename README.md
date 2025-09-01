@@ -1,86 +1,88 @@
 # Food Security Backend
 
-## 🚀 Production Ready Backend API
+## Production Ready Backend API
 
-Bu proje, Food Security uygulaması için production-ready backend API'sidir. CORS sorunları çözülmüş, database bağlantısı optimize edilmiş ve Azure App Service'e deploy edilmeye hazır durumdadır.
+This project is a production-ready backend API for the Food Security application. CORS issues have been resolved, database connection has been optimized, and it's ready for deployment to Azure App Service.
 
-## ✅ Çözülen Sorunlar
+## Resolved Issues
 
-### 1. CORS Blokaj Sorunu
-- **Sorun**: Frontend'den backend'e istekler CORS hatası veriyordu
-- **Çözüm**: Production-ready CORS middleware eklendi
-- **Sonuç**: Tüm endpoint'ler CORS uyumlu
+### 1. CORS Blocking Issue
+- **Problem**: Requests from frontend to backend were giving CORS errors
+- **Solution**: Production-ready CORS middleware added
+- **Result**: All endpoints are CORS compliant
 
-### 2. Database SSL Bağlantı Sorunu
-- **Sorun**: AWS RDS SSL sertifika hatası
-- **Çözüm**: `trustServerCertificate: true` ayarlandı
-- **Sonuç**: Database bağlantısı stabil
+### 2. Database SSL Connection Issue
+- **Problem**: AWS RDS SSL certificate error
+- **Solution**: `trustServerCertificate: true` configured
+- **Result**: Database connection is stable
 
-### 3. Azure Deployment Sorunları
-- **Sorun**: Azure App Service'te deployment sorunları
-- **Çözüm**: `web.config`, `startup.js` ve environment variables hazırlandı
-- **Sonuç**: Azure'a deploy edilmeye hazır
+### 3. Azure Deployment Issues
+- **Problem**: Deployment issues on Azure App Service
+- **Solution**: `web.config`, `startup.js` and environment variables prepared
+- **Result**: Ready for Azure deployment
 
-## 🛠️ Teknolojiler
+**Note:** These issues were identified and resolved on the existing project. Additionally, necessary files and test system for production deployment have been added.
+
+## Technologies
 
 - **Backend**: Node.js, Express.js
 - **Database**: MSSQL (Azure SQL Database / AWS RDS)
 - **Deployment**: Azure App Service
 - **Testing**: Axios, Custom test scripts
 
-## 📁 Proje Yapısı
+## Project Structure
 
 ```
 food-security-backend/
-├── app.js                 # Ana Express.js uygulaması
+├── app.js                 # Main Express.js application
 ├── startup.js             # Azure App Service startup script
-├── web.config             # IIS yapılandırması
+├── web.config             # IIS configuration
 ├── package.json           # Node.js dependencies
-├── database-setup.sql     # Database kurulum script'i
-├── AZURE-DEPLOYMENT-GUIDE.md  # Azure deployment rehberi
+├── database-setup.sql     # Database setup script
+├── AZURE-DEPLOYMENT-GUIDE.md  # Azure deployment guide
 ├── PRODUCTION-READY-CHECKLIST.md  # Production checklist
-├── test-*.js              # Test script'leri
-└── frontend/              # React frontend uygulaması
+├── test-*.js              # Test scripts
+└── frontend/              # React frontend application
     ├── src/
     ├── public/
     └── package.json
 ```
 
-## 🚀 Hızlı Başlangıç
+## Quick Start
 
 ### Local Development
 ```bash
-# Dependencies yükle
+# Install dependencies
 npm install
 
-# Backend'i başlat
+# Start backend
 npm start
 
-# Test et
+# Test
 npm run test-cors-local
 ```
 
 ### Production Deployment
 ```bash
-# Azure App Service'e deploy et
+# Deploy to Azure App Service
 git push origin master
 
-# Environment variables ayarla (Azure Portal)
-# Database kurulumu yap (database-setup.sql)
+# Set environment variables (Azure Portal)
+# Setup database (database-setup.sql)
 ```
 
-## 📋 API Endpoints
+## API Endpoints
 
 ### Authentication
-- `POST /login` - Kullanıcı girişi
-- `POST /mock-login` - Test için mock login
+- `POST /login` - User login
+- `POST /mock-login` - Mock login for testing
 
 ### Questionnaire
-- `POST /submit` - Anket verilerini kaydet
-- `POST /submit-master` - Master kullanıcı için submit
-- `GET /responses` - Kayıtlı yanıtları getir
-- `GET /master-responses` - Master kullanıcı için yanıtlar
-- `GET /dashboard-responses` - Dashboard verileri
+- `POST /submit` - Save questionnaire data
+- `POST /submit-master` - Submit for master user
+- `GET /responses` - Get saved responses
+- `GET /master-responses` - Responses for master user
+- `GET /dashboard-responses` - Dashboard data
 
 ### Utility
 - `GET /health` - Health check
@@ -88,7 +90,7 @@ git push origin master
 - `GET /cors-debug` - CORS debug
 - `GET /db-test` - Database test
 
-## 🔧 Environment Variables
+## Environment Variables
 
 ```bash
 # Database Configuration
@@ -110,7 +112,7 @@ NODE_ENV=production
 PORT=8080
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Local Tests
 ```bash
@@ -126,9 +128,9 @@ npm run test-production-cors
 ```
 
 ### Browser Test
-`test-browser.html` dosyasını tarayıcıda açarak test edebilirsiniz.
+You can test by opening `test-browser.html` file in your browser.
 
-## 📊 Database Schema
+## Database Schema
 
 ### Users Table
 ```sql
@@ -164,13 +166,13 @@ CREATE TABLE Submissions (
 );
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Azure App Service
-1. Azure Portal'da App Service oluştur
-2. Environment variables ayarla
-3. Database kurulumu yap (`database-setup.sql`)
-4. GitHub'dan otomatik deploy
+1. Create App Service in Azure Portal
+2. Set environment variables
+3. Setup database (`database-setup.sql`)
+4. Automatic deploy from GitHub
 
 ### Manual Deployment
 ```bash
@@ -182,48 +184,43 @@ npm run build
 git push origin master
 ```
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
-### CORS Sorunları
-- `AZURE-DEPLOYMENT-GUIDE.md` dosyasını kontrol edin
-- CORS headers'ların doğru ayarlandığından emin olun
+### CORS Issues
+- Check `AZURE-DEPLOYMENT-GUIDE.md` file
+- Ensure CORS headers are properly configured
 
-### Database Bağlantı Sorunları
-- SSL sertifika ayarlarını kontrol edin
-- Firewall rules'u kontrol edin
-- Connection string'i doğrulayın
+### Database Connection Issues
+- Check SSL certificate settings
+- Check firewall rules
+- Verify connection string
 
-### Production Sorunları
-- Azure App Service logs'ları kontrol edin
-- Environment variables'ları doğrulayın
-- Health check endpoint'ini test edin
+### Production Issues
+- Check Azure App Service logs
+- Verify environment variables
+- Test health check endpoint
 
-## 📝 Changelog
+## Changelog
 
-### v1.0.0 (Production Ready)
-- ✅ CORS sorunları çözüldü
-- ✅ Database SSL bağlantısı düzeltildi
-- ✅ Azure deployment hazırlandı
-- ✅ Kapsamlı test sistemi eklendi
-- ✅ Production documentation yazıldı
+### v1.0.0 (Issue Fixes - Production Ready)
+- CORS issues resolved
+- Database SSL connection fixed
+- Azure deployment prepared
+- Comprehensive test system added
+- Production documentation written
 
-## 👨‍💻 Geliştirici
+**Note:** These changes are issue fixes made on the existing project and necessary additional features for production deployment. The core structure of the project has been preserved, but it has been made production-ready.
 
-**Emir Tarik** - Backend Developer
+## Conclusion
 
-## 📄 Lisans
+This project is now **95% production-ready**. All fundamental issues have been resolved and the system is ready for deployment to Azure App Service.
 
-MIT License
+**Main Features:**
+- CORS compliant API
+- Secure database connection
+- Comprehensive test coverage
+- Azure deployment ready
+- Production documentation
 
----
 
-## 🎯 Sonuç
-
-Bu proje artık **%95 production-ready** durumda. Tüm temel sorunlar çözülmüş ve sistem Azure App Service'e deploy edilmeye hazır.
-
-**Ana Özellikler:**
-- ✅ CORS uyumlu API
-- ✅ Güvenli database bağlantısı
-- ✅ Kapsamlı test coverage
-- ✅ Azure deployment ready
-- ✅ Production documentation
+**Note:** Existing issues have been resolved on this project and necessary additional features for production deployment have been added. The core structure of the project has been preserved, but it has been made production-ready.
