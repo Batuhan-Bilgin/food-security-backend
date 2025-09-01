@@ -136,10 +136,12 @@ const config = {
     port: parseInt(process.env.DB_PORT) || 1433,
     options: {
         encrypt: process.env.DB_ENCRYPT !== 'false',  // Default to true for Azure, false for local
-        trustServerCertificate: process.env.DB_TRUST_CERT === 'true',  // Default to false for Azure, true for local
+        trustServerCertificate: process.env.DB_TRUST_CERT === 'true' || true,  // Default to true for AWS RDS
         connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT) || 30000,
         requestTimeout: parseInt(process.env.DB_REQUEST_TIMEOUT) || 30000,
-        cancelTimeout: parseInt(process.env.DB_CANCEL_TIMEOUT) || 5000
+        cancelTimeout: parseInt(process.env.DB_CANCEL_TIMEOUT) || 5000,
+        enableArithAbort: true,
+        requestRetryCount: 3
     }
 };
 
@@ -772,7 +774,7 @@ app.use((err, req, res, next) => {
 });
 
 
-const port = process.env.PORT || 5003;
+const port = process.env.PORT || 5002;
 
 app.listen(port, () => {
     console.log(`Backend is working on port ${port}`);

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Security Backend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Food Security Backend Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Health Check</h2>
+        <button class="test-button" onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. CORS Debug</h2>
+        <button class="test-button" onclick="testCorsDebug()">Test CORS Debug</button>
+        <div id="cors-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Preflight Request (OPTIONS)</h2>
+        <button class="test-button" onclick="testPreflight()">Test OPTIONS /login</button>
+        <div id="preflight-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Login Test</h2>
+        <input type="text" id="username" placeholder="Username" value="_bf_master_">
+        <input type="password" id="password" placeholder="Password" value="password">
+        <button class="test-button" onclick="testLogin()">Test Login</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Mock Login Test</h2>
+        <button class="test-button" onclick="testMockLogin()">Test Mock Login</button>
+        <div id="mock-login-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Production Test</h2>
+        <button class="test-button" onclick="testProduction()">Test Production Backend</button>
+        <div id="production-result" class="result"></div>
+    </div>
+
+    <script>
+        const LOCAL_BACKEND = 'http://localhost:5002';
+        const PRODUCTION_BACKEND = 'https://food-security-back.azurewebsites.net';
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${LOCAL_BACKEND}/health`);
+                const data = await response.json();
+                showResult('health-result', 
+                    `✅ Health Check Success!\nStatus: ${response.status}\nData: ${JSON.stringify(data, null, 2)}`, 
+                    'success');
+            } catch (error) {
+                showResult('health-result', 
+                    `❌ Health Check Failed!\nError: ${error.message}`, 
+                    'error');
+            }
+        }
+
+        async function testCorsDebug() {
+            try {
+                const response = await fetch(`${LOCAL_BACKEND}/cors-debug`, {
+                    headers: {
+                        'Origin': window.location.origin
+                    }
+                });
+                const data = await response.json();
+                showResult('cors-result', 
+                    `✅ CORS Debug Success!\nStatus: ${response.status}\nHeaders: ${JSON.stringify(data.headers, null, 2)}`, 
+                    'success');
+            } catch (error) {
+                showResult('cors-result', 
+                    `❌ CORS Debug Failed!\nError: ${error.message}`, 
+                    'error');
+            }
+        }
+
+        async function testPreflight() {
+            try {
+                const response = await fetch(`${LOCAL_BACKEND}/login`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                showResult('preflight-result', 
+                    `✅ Preflight Success!\nStatus: ${response.status}\nHeaders: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`, 
+                    'success');
+            } catch (error) {
+                showResult('preflight-result', 
+                    `❌ Preflight Failed!\nError: ${error.message}`, 
+                    'error');
+            }
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${LOCAL_BACKEND}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                showResult('login-result', 
+                    `✅ Login Test Success!\nStatus: ${response.status}\nData: ${JSON.stringify(data, null, 2)}`, 
+                    'success');
+            } catch (error) {
+                showResult('login-result', 
+                    `❌ Login Test Failed!\nError: ${error.message}`, 
+                    'error');
+            }
+        }
+
+        async function testMockLogin() {
+            try {
+                const response = await fetch(`${LOCAL_BACKEND}/mock-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({ username: '_bf_master_', password: 'password' })
+                });
+                const data = await response.json();
+                showResult('mock-login-result', 
+                    `✅ Mock Login Success!\nStatus: ${response.status}\nData: ${JSON.stringify(data, null, 2)}`, 
+                    'success');
+            } catch (error) {
+                showResult('mock-login-result', 
+                    `❌ Mock Login Failed!\nError: ${error.message}`, 
+                    'error');
+            }
+        }
+
+        async function testProduction() {
+            try {
+                const response = await fetch(`${PRODUCTION_BACKEND}/health`);
+                const data = await response.json();
+                showResult('production-result', 
+                    `✅ Production Test Success!\nStatus: ${response.status}\nData: ${JSON.stringify(data, null, 2)}`, 
+                    'success');
+            } catch (error) {
+                showResult('production-result', 
+                    `❌ Production Test Failed!\nError: ${error.message}\n\nThis is expected if production backend is not deployed yet.`, 
+                    'error');
+            }
+        }
+
+        // Auto-run health check on page load
+        window.onload = function() {
+            testHealth();
+        };
+    </script>
+</body>
+</html>
