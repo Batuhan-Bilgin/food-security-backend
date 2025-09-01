@@ -31,6 +31,11 @@ app.use((req, res, next) => {
   console.log(`Origin: ${origin}`);
   console.log(`URL: ${req.url}`);
   
+  // Set CORS headers for all requests first
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-Requested-With');
+  res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+  
   // Allow local development
   if (origin === 'http://localhost:3000') {
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -57,12 +62,9 @@ app.use((req, res, next) => {
   else {
     console.log('❌ Origin not allowed:', origin);
     console.log('Available origins:', allowedOrigins);
+    // Still set a default CORS header to prevent browser blocking
+    res.header('Access-Control-Allow-Origin', '*');
   }
-  
-  // Set CORS headers for all requests
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-Requested-With');
-  res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
@@ -189,12 +191,8 @@ app.post('/login', async (req, res) => {
         }
     } catch (error) {
         console.error('Error during login:', error);
-        // Ensure CORS headers are present even on error
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,Cache-Control');
-        res.status(500).json({ message: 'Login failed' });
+        // CORS headers are already set by the global middleware
+        res.status(500).json({ message: 'Login failed', error: error.message });
     }
 });
 
@@ -786,11 +784,6 @@ app.get('/dashboard-responses', async (req, res) => {
 // after all routes, before listen():
 
 app.use((err, req, res, next) => {
-  // const origin = req.get('Origin'); // This line is removed as CORS is disabled
-  // if (allowedOrigins.includes(origin)) { // This line is removed as CORS is disabled
-  //   res.header('Access-Control-Allow-Origin', origin); // This line is removed as CORS is disabled
-  //   res.header('Access-Control-Allow-Credentials', 'true'); // This line is removed as CORS is disabled
-  // } // This line is removed as CORS is disabled
   console.error('💥 Unexpected error in', req.method, req.path, err);
   res.status(err.status || 500).json({ error: err.message });
 });
