@@ -784,6 +784,19 @@ app.get('/dashboard-responses', async (req, res) => {
 // after all routes, before listen():
 
 app.use((err, req, res, next) => {
+  const origin = req.get('Origin');
+  
+  // Set CORS headers for error responses
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.header('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, X-Requested-With');
+  
   console.error('💥 Unexpected error in', req.method, req.path, err);
   res.status(err.status || 500).json({ error: err.message });
 });
