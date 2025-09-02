@@ -40,27 +40,27 @@ app.use((req, res, next) => {
   if (origin === 'http://localhost:3000') {
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
     res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Local development origin allowed');
+    console.log(' Local development origin allowed');
   }
   // Allow Azure frontend
   else if (origin === 'https://food-security-front.azurewebsites.net') {
     res.header('Access-Control-Allow-Origin', 'https://food-security-front.azurewebsites.net');
     res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Azure frontend origin allowed');
+    console.log(' Azure frontend origin allowed');
   }
   // Allow other production origins
   else if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
-    console.log('✅ Production origin allowed');
+    console.log(' Production origin allowed');
   }
   // Allow requests with no origin (like mobile apps or curl requests)
   else if (!origin) {
     res.header('Access-Control-Allow-Origin', '*');
-    console.log('✅ No origin request allowed');
+    console.log(' No origin request allowed');
   }
   else {
-    console.log('❌ Origin not allowed:', origin);
+    console.log(' Origin not allowed:', origin);
     console.log('Available origins:', allowedOrigins);
     // Still set a default CORS header to prevent browser blocking
     res.header('Access-Control-Allow-Origin', '*');
@@ -68,7 +68,7 @@ app.use((req, res, next) => {
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('🔄 Preflight request handled');
+    console.log(' Preflight request handled');
     res.status(204).send();
     return;
   }
